@@ -1,0 +1,7 @@
+.transformers-cache/
+**/.transformers-cache/
+node_modules/
+**/node_modules/
+.turbo/
+.next/
+.env

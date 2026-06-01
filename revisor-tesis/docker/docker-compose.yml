@@ -1,0 +1,133 @@
+# ==============================================================
+# REVISOR DE TESIS — Docker Compose Maestro
+# Levanta toda la infraestructura a costo CERO
+# ==============================================================
+# Uso: docker compose -f docker/docker-compose.yml up -d
+# ==============================================================
+
+services:
+  # ─── MySQL 8.x ──────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: revisor-mysql
+    restart: unless-stopped
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_secret_2025}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-revisor_tesis}
+      MYSQL_USER: ${MYSQL_USER:-revisor}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-revisor_secret_2025}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init/mysql-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --max-connections=200
+      --innodb-buffer-pool-size=256M
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_secret_2025}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - revisor-net
+
+  # ─── Redis 7 (Colas BullMQ) ────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: revisor-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redis_secret_2025} --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis_secret_2025}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - revisor-net
+
+  # ─── MinIO (S3 Compatible — Almacenamiento de Archivos) ────
+  minio:
+    image: minio/minio:latest
+    container_name: revisor-minio
+    restart: unless-stopped
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minio_secret_2025}
+    volumes:
+      - minio_data:/data
+    command: server --console-address ":9001" /data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - revisor-net
+
+  # ─── MinIO Init (Crear buckets automáticamente) ────────────
+  minio-init:
+    image: minio/mc:latest
+    container_name: revisor-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+        mc alias set myminio http://minio:9000 ${MINIO_ACCESS_KEY:-minioadmin} ${MINIO_SECRET_KEY:-minio_secret_2025};
+        mc mb --ignore-existing myminio/${MINIO_BUCKET_DOCUMENTS:-thesis-documents};
+        mc mb --ignore-existing myminio/${MINIO_BUCKET_PATTERNS:-thesis-patterns};
+        mc anonymous set download myminio/${MINIO_BUCKET_DOCUMENTS:-thesis-documents};
+        echo 'Buckets creados exitosamente';
+        exit 0;
+      "
+    networks:
+      - revisor-net
+
+  # ─── Qdrant (Base de Datos Vectorial) ──────────────────────
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: revisor-qdrant
+    restart: unless-stopped
+    ports:
+      - "${QDRANT_PORT:-6333}:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__GRPC_PORT: 6334
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:6333/readyz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - revisor-net
+
+# ─── Volúmenes Persistentes ─────────────────────────────────
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  minio_data:
+    driver: local
+  qdrant_data:
+    driver: local
+
+# ─── Red Interna ────────────────────────────────────────────
+networks:
+  revisor-net:
+    driver: bridge

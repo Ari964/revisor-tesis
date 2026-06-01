@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "Revisor de Tesis",
+    "slug": "revisor-tesis-mobile",
+    "version": "1.0.0",
+    "scheme": "revisor-tesis",
+    "platforms": ["ios", "android"],
+    "plugins": ["expo-router", "expo-secure-store", [
+      "expo-notifications", { "icon": "./assets/notification-icon.png", "color": "#6366f1" }
+    ]],
+    "extra": {
+      "apiUrl": "http://localhost:3001/api"
+    }
+  }
+}

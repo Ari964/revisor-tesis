@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+.next/
+out/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker volumes
+docker/data/
+
+# Turbo
+.turbo/
+
+# Prisma
+packages/database/prisma/migrations/
+
+# MinIO data
+minio_data/
+
+# Qdrant data
+qdrant_storage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Expo
+apps/mobile/.expo/
+
+.transformers-cache/
+node_modules/
+.transformers-cache/
+
+**/.transformers-cache/

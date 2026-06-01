@@ -1,0 +1,7 @@
+﻿src/modules/auth/auth.controller.ts(18,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/modules/auth/auth.controller.ts(22,3): error TS2564: Property 'password' has no initializer and is not definitely assigned in the constructor.
+src/modules/auth/auth.controller.ts(25,3): error TS2564: Property 'firstName' has no initializer and is not definitely assigned in the constructor.
+src/modules/auth/auth.controller.ts(28,3): error TS2564: Property 'lastName' has no initializer and is not definitely assigned in the constructor.
+src/modules/auth/auth.controller.ts(37,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/modules/auth/auth.controller.ts(40,3): error TS2564: Property 'password' has no initializer and is not definitely assigned in the constructor.
+src/modules/auth/auth.controller.ts(45,3): error TS2564: Property 'refreshToken' has no initializer and is not definitely assigned in the constructor.
