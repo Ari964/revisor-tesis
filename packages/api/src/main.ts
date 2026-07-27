@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,15 +21,15 @@ async function bootstrap() {
 
   // CORS para Next.js y Expo
   app.enableCors({
-    origin: [
-      'http://localhost:3000', // Next.js
-      'http://localhost:8081', // Expo
-      'exp://localhost:8081',
-    ],
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? ['http://localhost:3000']
+        : true,
     credentials: true,
   });
 
-  const port = process.env.API_PORT || 3001;
+  const configService = app.get(ConfigService);
+  const port = configService.get<number>('API_PORT') || 3001;
   await app.listen(port);
   console.log(`🚀 Revisor de Tesis API corriendo en http://localhost:${port}/api`);
 }

@@ -14,13 +14,15 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { GeneratorModule } from './modules/generator/generator.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
     // Configuración global
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '../../.env',
+      envFilePath: ['.env', '../.env', '../../.env'],
+      ignoreEnvVars: true,
     }),
 
     // BullMQ — Conexión a Redis para colas
@@ -48,6 +50,8 @@ import { GeneratorModule } from './modules/generator/generator.module';
     DashboardModule,
     NotificationsModule,
     GeneratorModule,
+    ChatModule,
   ],
 })
 export class AppModule {}
+

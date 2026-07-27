@@ -6,14 +6,18 @@ import { useRouter, usePathname } from 'next/navigation';
 import {
   LayoutDashboard, FolderKanban, FileUp, BookTemplate, Shield,
   BookCheck, Users, Bell, LogOut, Menu, X, GraduationCap, Moon, Sun,
-  BarChart, Settings, BookOpen, FilePlus2
+  BarChart, Settings, BookOpen, FilePlus2, MessageSquare, UserCheck,
+  FileCheck
 } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'COORDINATOR', 'ADVISOR', 'STUDENT'] },
+  { href: '/dashboard/chat', label: 'Asistente IA', icon: MessageSquare, roles: ['ADMIN', 'COORDINATOR', 'ADVISOR', 'STUDENT'] },
   { href: '/dashboard/projects', label: 'Proyectos', icon: FolderKanban, roles: ['ADMIN', 'COORDINATOR', 'ADVISOR', 'STUDENT'] },
   { href: '/dashboard/documents', label: 'Documentos', icon: FileUp, roles: ['ADMIN', 'COORDINATOR', 'ADVISOR', 'STUDENT'] },
   { href: '/dashboard/generator', label: 'Generar Tesis', icon: FilePlus2, roles: ['ADMIN', 'COORDINATOR', 'ADVISOR', 'STUDENT'] },
+  { href: '/dashboard/reviewer', label: 'Revisión Avanzada', icon: FileCheck, roles: ['ADMIN', 'COORDINATOR', 'ADVISOR', 'STUDENT'] },
+  { href: '/dashboard/authorities', label: 'Autoridades', icon: UserCheck, roles: ['ADMIN', 'COORDINATOR', 'ADVISOR', 'STUDENT'] },
   { href: '/dashboard/patterns', label: 'Patrones', icon: BookTemplate, roles: ['ADMIN', 'COORDINATOR'] },
   { href: '/dashboard/plagiarism', label: 'Plagio', icon: Shield, roles: ['ADMIN', 'COORDINATOR', 'ADVISOR'] },
   { href: '/dashboard/citations', label: 'Citas', icon: BookCheck, roles: ['ADMIN', 'COORDINATOR', 'ADVISOR', 'STUDENT'] },
@@ -22,6 +26,7 @@ const navItems = [
   { href: '/dashboard/admin/users', label: 'Usuarios', icon: Users, roles: ['ADMIN'] },
   { href: '/dashboard/settings', label: 'Ajustes', icon: Settings, roles: ['ADMIN'] },
 ];
+
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();

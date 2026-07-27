@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { UserRole } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class UsersService {
@@ -21,6 +23,9 @@ export class UsersService {
           role: true,
           isActive: true,
           avatarUrl: true,
+          academicDegree: true,
+          institution: true,
+          orcid: true,
           createdAt: true,
           orcidProfile: { select: { orcidId: true } },
         },
@@ -32,7 +37,7 @@ export class UsersService {
     return {
       data: users.map((u) => ({
         ...u,
-        orcidId: u.orcidProfile?.orcidId,
+        orcidId: u.orcidProfile?.orcidId || u.orcid,
         orcidProfile: undefined,
       })),
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
@@ -50,12 +55,115 @@ export class UsersService {
         role: true,
         isActive: true,
         avatarUrl: true,
+        academicDegree: true,
+        institution: true,
+        orcid: true,
         createdAt: true,
         orcidProfile: true,
       },
     });
     if (!user) throw new NotFoundException('Usuario no encontrado');
     return user;
+  }
+
+  async create(data: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: UserRole;
+    academicDegree?: string;
+    institution?: string;
+    orcid?: string;
+  }) {
+    const existing = await this.prisma.user.findUnique({
+      where: { email: data.email },
+    });
+    if (existing) {
+      throw new BadRequestException('El correo ya está registrado');
+    }
+
+    // Hash a random password because they won't use standard password login initially
+    const randomPassword = crypto.randomBytes(16).toString('hex');
+    const passwordHash = await bcrypt.hash(randomPassword, 12);
+
+    return this.prisma.user.create({
+      data: {
+        email: data.email,
+        passwordHash,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        role: data.role,
+        academicDegree: data.academicDegree || null,
+        institution: data.institution || null,
+        orcid: data.orcid || null,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        academicDegree: true,
+        institution: true,
+        orcid: true,
+        createdAt: true,
+      }
+    });
+  }
+
+  async update(
+    id: string,
+    data: {
+      email?: string;
+      firstName?: string;
+      lastName?: string;
+      role?: UserRole;
+      academicDegree?: string;
+      institution?: string;
+      orcid?: string;
+    },
+  ) {
+    await this.findById(id);
+
+    if (data.email) {
+      const existing = await this.prisma.user.findUnique({
+        where: { email: data.email },
+      });
+      if (existing && existing.id !== id) {
+        throw new BadRequestException('El correo ya está registrado por otro usuario');
+      }
+    }
+
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        role: data.role,
+        academicDegree: data.academicDegree !== undefined ? data.academicDegree : undefined,
+        institution: data.institution !== undefined ? data.institution : undefined,
+        orcid: data.orcid !== undefined ? data.orcid : undefined,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        academicDegree: true,
+        institution: true,
+        orcid: true,
+        createdAt: true,
+      }
+    });
+  }
+
+  async delete(id: string) {
+    await this.findById(id);
+    return this.prisma.user.delete({
+      where: { id },
+    });
   }
 
   async updateExpoPushToken(userId: string, expoPushToken: string) {

@@ -5,3 +5,8 @@ node_modules/
 .turbo/
 .next/
 .env
+dist/
+**/dist/
+scratch-test.*
+scratch/
+
