@@ -292,7 +292,9 @@ export default function ReviewerPage() {
           <div className="space-y-1.5 pt-2 border-t border-surface-200 dark:border-surface-700">
             <div className="flex justify-between items-center">
               <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400">Instrucciones de Revisión IA</label>
-              <HelpCircle className="w-3.5 h-3.5 text-gray-400 cursor-help" title="Define reglas o requisitos específicos que la IA deba buscar en tu texto borrador." />
+              <span title="Define reglas o requisitos específicos que la IA deba buscar en tu texto borrador.">
+                <HelpCircle className="w-3.5 h-3.5 text-gray-400 cursor-help" />
+              </span>
             </div>
             <textarea
               value={customPrompt}

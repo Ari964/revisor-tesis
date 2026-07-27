@@ -1,0 +1,116 @@
+# ==============================================================
+# REVISOR DE TESIS — Render Blueprint Specification
+# Despliega toda la infraestructura (Frontend, API + Workers, Redis)
+# ==============================================================
+# Documentación: https://render.com/docs/blueprints
+# ==============================================================
+
+services:
+  # ─── Redis (Colas de Procesamiento BullMQ) ───────────────────
+  - type: redis
+    name: revisor-redis
+    ipAllowList: [] # Solo accesible internamente por otros servicios de Render
+    plan: free
+
+  # ─── API Backend + Workers (NestJS + BullMQ Consumers) ────────
+  - type: web
+    name: revisor-api
+    env: node
+    plan: free
+    buildCommand: "npx prisma generate --schema=packages/database/prisma/schema.prisma && npx turbo run build --filter=@revisor-tesis/api --filter=@revisor-tesis/workers"
+    startCommand: "npm run start --workspace=packages/api & npm run start --workspace=packages/workers"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: API_PORT
+        value: 10000
+      - key: PORT
+        value: 10000
+
+      # Base de Datos (MySQL) - Ingresar URL de Aiven.io o Clever Cloud
+      - key: DATABASE_URL
+        sync: false
+
+      # Conexión Redis (Enlazado al servicio interno de Render)
+      - key: REDIS_HOST
+        fromService:
+          type: redis
+          name: revisor-redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: redis
+          name: revisor-redis
+          property: port
+      - key: REDIS_PASSWORD
+        fromService:
+          type: redis
+          name: revisor-redis
+          property: password
+
+      # Object Storage (S3 / Cloudflare R2) - Configurar credenciales
+      - key: MINIO_ENDPOINT
+        sync: false
+      - key: MINIO_PORT
+        sync: false
+      - key: MINIO_ACCESS_KEY
+        sync: false
+      - key: MINIO_SECRET_KEY
+        sync: false
+      - key: MINIO_BUCKET_DOCUMENTS
+        value: thesis-documents
+      - key: MINIO_BUCKET_PATTERNS
+        value: thesis-patterns
+      - key: MINIO_USE_SSL
+        value: "true"
+
+      # Base de Datos Vectorial (Qdrant Cloud)
+      - key: QDRANT_HOST
+        sync: false
+      - key: QDRANT_PORT
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: QDRANT_COLLECTION
+        value: thesis_chunks
+
+      # Inteligencia Artificial (Gemini API)
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: GEMINI_RPM_LIMIT
+        value: "12"
+      - key: GEMINI_MAX_RETRIES
+        value: "5"
+
+      # Seguridad (JWT) - Generar claves seguras
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: "15m"
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: "7d"
+
+      # CORS (URL del Frontend en Render)
+      - key: FRONTEND_URL
+        sync: false
+
+  # ─── Frontend Web (Next.js Application) ─────────────────────
+  - type: web
+    name: revisor-web
+    env: node
+    plan: free
+    buildCommand: "npx turbo run build --filter=@revisor-tesis/web"
+    startCommand: "npm run start --workspace=apps/web"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      
+      # URL pública de la API Backend (ej. https://revisor-api.onrender.com/api)
+      - key: NEXT_PUBLIC_API_URL
+        sync: false

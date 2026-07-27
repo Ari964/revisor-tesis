@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
 
   // Prefijo global de API
   app.setGlobalPrefix('api');
@@ -23,12 +24,11 @@ async function bootstrap() {
   app.enableCors({
     origin:
       process.env.NODE_ENV === 'production'
-        ? ['http://localhost:3000']
+        ? [configService.get<string>('FRONTEND_URL') || 'http://localhost:3000']
         : true,
     credentials: true,
   });
 
-  const configService = app.get(ConfigService);
   const port = configService.get<number>('API_PORT') || 3001;
   await app.listen(port);
   console.log(`🚀 Revisor de Tesis API corriendo en http://localhost:${port}/api`);

@@ -62,8 +62,13 @@ async function generateEmbedding(text: string): Promise<number[]> {
 // ─── Worker ─────────────────────────────────────────────────
 
 export function startEmbeddingsWorker(prisma: PrismaClient, connection: IORedis) {
+  const qdrantUrl = process.env.QDRANT_HOST?.startsWith('http')
+    ? process.env.QDRANT_HOST
+    : `http://${process.env.QDRANT_HOST || 'localhost'}:${process.env.QDRANT_PORT || '6333'}`;
+
   const qdrant = new QdrantClient({
-    url: `http://${process.env.QDRANT_HOST || 'localhost'}:${process.env.QDRANT_PORT || '6333'}`,
+    url: qdrantUrl,
+    apiKey: process.env.QDRANT_API_KEY,
   });
 
   // Asegurar que la colección existe

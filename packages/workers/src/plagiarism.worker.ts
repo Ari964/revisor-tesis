@@ -11,8 +11,13 @@ import IORedis from 'ioredis';
 import { QUEUES, EMBEDDING_CONFIG, QDRANT_CONFIG } from '@revisor-tesis/shared';
 
 export function startPlagiarismWorker(prisma: PrismaClient, connection: IORedis) {
+  const qdrantUrl = process.env.QDRANT_HOST?.startsWith('http')
+    ? process.env.QDRANT_HOST
+    : `http://${process.env.QDRANT_HOST || 'localhost'}:${process.env.QDRANT_PORT || '6333'}`;
+
   const qdrant = new QdrantClient({
-    url: `http://${process.env.QDRANT_HOST || 'localhost'}:${process.env.QDRANT_PORT || '6333'}`,
+    url: qdrantUrl,
+    apiKey: process.env.QDRANT_API_KEY,
   });
 
   const worker = new Worker(
