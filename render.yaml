@@ -22,7 +22,7 @@ services:
     name: revisor-api
     env: node
     plan: free
-    buildCommand: "npx prisma generate --schema=packages/database/prisma/schema.prisma && npx turbo run build --filter=@revisor-tesis/api --filter=@revisor-tesis/workers"
+    buildCommand: "npm install --include=dev && npx prisma generate --schema=packages/database/prisma/schema.prisma && npx turbo run build --filter=@revisor-tesis/api --filter=@revisor-tesis/workers"
     startCommand: "npm run start --workspace=packages/api & npm run start --workspace=packages/workers"
     envVars:
       - key: NODE_ENV
@@ -104,7 +104,7 @@ services:
     name: revisor-web
     env: node
     plan: free
-    buildCommand: "npx turbo run build --filter=@revisor-tesis/web"
+    buildCommand: "npm install --include=dev && npx turbo run build --filter=@revisor-tesis/web"
     startCommand: "npm run start --workspace=apps/web"
     envVars:
       - key: NODE_ENV
