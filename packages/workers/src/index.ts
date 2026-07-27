@@ -35,7 +35,7 @@ async function main() {
   console.log('🔧 Iniciando workers de Revisor de Tesis...');
 
   await prisma.$connect();
-  console.log('✅ Prisma conectado a MySQL');
+  console.log('✅ Prisma conectado a PostgreSQL');
 
   // Iniciar cada worker
   startEmbeddingsWorker(prisma, redisConnection);

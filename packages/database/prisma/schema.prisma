@@ -8,7 +8,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -124,7 +124,7 @@ model OrcidProfile {
   displayName  String?  @map("display_name")
   biography    String?  @db.Text
   keywords     String?  @db.Text // JSON array de keywords
-  works        String?  @db.LongText // JSON array de publicaciones importadas
+  works        String?  @db.Text // JSON array de publicaciones importadas
   lastSyncAt   DateTime? @map("last_sync_at")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
@@ -172,7 +172,7 @@ model DocumentPattern {
   description String?  @db.Text
   version     String   @default("1.0") @db.VarChar(20)
   // Estructura JSON del patrón: capítulos, secciones, subsecciones, reglas de formato
-  structure   String   @db.LongText // JSON: PatternStructure
+  structure   String   @db.Text // JSON: PatternStructure
   isDefault   Boolean  @default(false) @map("is_default")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -191,7 +191,7 @@ model DocumentSubmission {
   fileKey         String         @map("file_key") @db.VarChar(500) // Key en MinIO
   fileSize        Int            @map("file_size") // Bytes
   mimeType        String         @map("mime_type") @db.VarChar(100)
-  extractedText   String?        @map("extracted_text") @db.LongText
+  extractedText   String?        @map("extracted_text") @db.Text
   chunkCount      Int?           @map("chunk_count")
   status          DocumentStatus @default(UPLOADED)
   overallScore    Float?         @map("overall_score") // Nota sugerida 0-20
@@ -369,7 +369,7 @@ model ChatMessage {
   id             String   @id @default(uuid())
   conversationId String   @map("conversation_id")
   role           String   @db.VarChar(20) // "user" | "assistant"
-  content        String   @db.LongText
+  content        String   @db.Text
   fileUrl        String?  @map("file_url") @db.VarChar(500)
   fileName       String?  @map("file_name") @db.VarChar(300)
   createdAt      DateTime @default(now()) @map("created_at")
@@ -383,9 +383,9 @@ model DocumentTemplate {
   id             String    @id @default(uuid())
   name           String    @db.VarChar(300)
   documentType   String    @map("document_type") @db.VarChar(50) // "THESIS" | "ARTICLE" | "FINAL_THESIS"
-  templateText   String    @map("template_text") @db.LongText
-  templateStyles String?   @map("template_styles") @db.LongText // JSON representation of styles
-  requiredFields String?   @map("required_fields") @db.LongText // JSON representation of fields
+  templateText   String    @map("template_text") @db.Text
+  templateStyles String?   @map("template_styles") @db.Text // JSON representation of styles
+  requiredFields String?   @map("required_fields") @db.Text // JSON representation of fields
   fileName       String?   @map("file_name") @db.VarChar(300)
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")

@@ -1,9 +1,14 @@
 # ==============================================================
 # REVISOR DE TESIS — Render Blueprint Specification
-# Despliega toda la infraestructura (Frontend, API + Workers, Redis)
+# Despliega toda la infraestructura (Frontend, API + Workers, Redis, Postgres)
 # ==============================================================
 # Documentación: https://render.com/docs/blueprints
 # ==============================================================
+
+databases:
+  # ─── Base de Datos Relacional (PostgreSQL) ────────────────────
+  - name: revisor-db
+    plan: free
 
 services:
   # ─── Redis (Colas de Procesamiento BullMQ) ───────────────────
@@ -27,9 +32,11 @@ services:
       - key: PORT
         value: 10000
 
-      # Base de Datos (MySQL) - Ingresar URL de Aiven.io o Clever Cloud
+      # Base de Datos (PostgreSQL) - Enlazado automáticamente al servicio nativo
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: revisor-db
+          property: connectionString
 
       # Conexión Redis (Enlazado al servicio interno de Render)
       - key: REDIS_HOST
