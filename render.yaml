@@ -49,12 +49,6 @@ services:
           type: redis
           name: revisor-redis
           property: port
-      - key: REDIS_PASSWORD
-        fromService:
-          type: redis
-          name: revisor-redis
-          property: password
-
       # Object Storage (S3 / Cloudflare R2) - Configurar credenciales
       - key: MINIO_ENDPOINT
         sync: false
